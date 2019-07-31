@@ -5,6 +5,7 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,59 +20,66 @@ import java.lang.IllegalArgumentException
 class BluetoothQueryPlugin(
         private val context: Context,
         private val activity: Activity
-) : MethodCallHandler {
+) : MethodCallHandler, PluginRegistry.ActivityResultListener, PluginRegistry.RequestPermissionsResultListener {
 
-    private var btAdapter: BluetoothAdapter? = null
+    private lateinit var btAdapter: BluetoothAdapter
+    private var currentRequestResult: Result? = null
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when(call.method) {
             "initialize" -> result.success(init())
             "isEnabled" -> result.success(isEnabled())
-            "hasBluetoothPermission" -> result.success(checkIfHasBluetoothPermission())
-            "askToTurnBluetoothOn" -> askToTurnBluetoothOn()
-            "askBluetoothPermission" -> askBluetoothPermission()
+            "askToTurnBluetoothOn" -> {
+                if(currentRequestResult != null)
+                    throw IllegalStateException("Already requesting permission!")
+                currentRequestResult = result
+                askToTurnBluetoothOn()
+            }
         }
     }
 
     private fun init(): Boolean {
-        btAdapter = BluetoothAdapter.getDefaultAdapter()
-        if(btAdapter == null) {
-            throw IllegalArgumentException("This device doesn't support bluetooth")
+        val adapter = BluetoothAdapter.getDefaultAdapter()
+        if(adapter != null) {
+            btAdapter = adapter
         }
 
-        return true
+        return adapter != null
     }
 
-    private fun isEnabled(): Boolean {
-        return btAdapter!!.isEnabled
-    }
+    private fun isEnabled(): Boolean = btAdapter.isEnabled
 
-    private fun checkIfHasBluetoothPermission(): Boolean {
-        return ContextCompat.checkSelfPermission(activity, Manifest.permission.BLUETOOTH) == PERMISSION_GRANTED
-    }
-
-    // TODO: This method should be a stream, this way the dart client can listen for the result
     private fun askToTurnBluetoothOn() {
         val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         activity.startActivityForResult(intent, CODE_TURN_BLUETOOTH_ON)
     }
 
-    // TODO: This method should be a stream, this way the dart client can listen for the result
-    private fun askBluetoothPermission() {
-        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.BLUETOOTH), CODE_BLUETOOTH_PERMISSION)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
+        return when(requestCode) {
+            CODE_TURN_BLUETOOTH_ON -> {
+                currentRequestResult!!.success(resultCode == Activity.RESULT_OK)
+                currentRequestResult = null
+                true
+            }
+            else -> false
+        }
+    }
+
+    override fun onRequestPermissionsResult(p0: Int, p1: Array<out String>?, p2: IntArray?): Boolean {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     companion object {
 
         private const val CODE_TURN_BLUETOOTH_ON = 100
 
-        private const val CODE_BLUETOOTH_PERMISSION = 200
-
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "bluetooth_query")
             val pluginInstance = BluetoothQueryPlugin(registrar.context(), registrar.activity())
 
+            registrar.addActivityResultListener(pluginInstance)
+            registrar.addRequestPermissionsResultListener(pluginInstance)
             channel.setMethodCallHandler(pluginInstance)
         }
     }

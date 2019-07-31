@@ -23,16 +23,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _askToTurnBluetoothOn() async {
-    await BluetoothQuery.askToTurnBluetoothOn();
-  }
-
-  void _checkBluetoothPermission() async {
-    final hasPermission = await BluetoothQuery.hasBluetoothPermission();
-    print("Got permission: $hasPermission");
-  }
-
-  void _askBluetoothPermission() async {
-    await BluetoothQuery.askBluetoothPermission();
+    final turnedOn = await BluetoothQuery.askToTurnBluetoothOn();
+    print('Bluetooth is turned on: $turnedOn');
   }
 
   @override
@@ -43,6 +35,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Bluetooth Query Plugin Demo'),
         ),
         body: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
@@ -53,20 +46,6 @@ class _MyAppState extends State<MyApp> {
                 onPressed: _askToTurnBluetoothOn,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FlatButton(
-                child: Text('Check bluetooth permission'),
-                onPressed: _checkBluetoothPermission,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FlatButton(
-                child: Text('Ask bluetooth permission'),
-                onPressed: _askBluetoothPermission,
-              ),
-            )
           ],
         )
       ),
