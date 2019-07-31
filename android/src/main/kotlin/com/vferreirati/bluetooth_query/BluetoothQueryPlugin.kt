@@ -43,6 +43,10 @@ class BluetoothQueryPlugin(
         }
     }
 
+    /**
+     * Starts the bluetooth query plugin by getting the BluetoothAdapter instance
+     * Returns false if the device doesn't support bluetooth
+     * */
     private fun init(): Boolean {
         val adapter = BluetoothAdapter.getDefaultAdapter()
         if(adapter != null) {
@@ -52,19 +56,34 @@ class BluetoothQueryPlugin(
         return adapter != null
     }
 
+    /**
+     * Check if the device bluetooth is turned on
+     * */
     private fun isEnabled(): Boolean = btAdapter.isEnabled
 
+    /**
+     * Asks the user to turn the bluetooth on
+     * */
     private fun askToTurnBluetoothOn() {
         val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
         activity.startActivityForResult(intent, CODE_TURN_BLUETOOTH_ON)
     }
 
+    /**
+     * Check if the application has access to the devices GPS
+     * */
     private fun checkLocationPermission() = ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
 
+    /**
+     * Asks the user for Location permission
+     * */
     private fun askLocationPermission() {
         ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), REQUEST_LOCATION_PERMISSION)
     }
 
+    /**
+     * Android callback
+     * */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         return when(requestCode) {
             CODE_TURN_BLUETOOTH_ON -> {
@@ -76,6 +95,9 @@ class BluetoothQueryPlugin(
         }
     }
 
+    /**
+     * Android callback
+     * */
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
         return when(requestCode) {
             REQUEST_LOCATION_PERMISSION -> {
