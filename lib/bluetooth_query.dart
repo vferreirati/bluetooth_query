@@ -31,4 +31,8 @@ class BluetoothQuery {
   static Future<bool> askLocationPermission() async {
     return await _channel.invokeMethod('askLocationPermission');
   }
+
+  static Future startScan() async {
+    await _channel.invokeMethod('startScan');
+  }
 }

@@ -37,6 +37,11 @@ class _MyAppState extends State<MyApp> {
     print('Location permission granted: $granted');
   }
 
+  void _startScan() {
+    print('Starting scan');
+    BluetoothQuery.startScan();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -68,6 +73,13 @@ class _MyAppState extends State<MyApp> {
               child: FlatButton(
                 child: Text('Ask location permission'),
                 onPressed: _askLocationPermission,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FlatButton(
+                child: Text('Start scan'),
+                onPressed: _startScan,
               ),
             ),
           ],

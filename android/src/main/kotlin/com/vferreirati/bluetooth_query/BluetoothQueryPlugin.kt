@@ -2,12 +2,18 @@ package com.vferreirati.bluetooth_query
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -22,6 +28,18 @@ class BluetoothQueryPlugin(
 
     private lateinit var btAdapter: BluetoothAdapter
     private var currentRequestResult: Result? = null
+    private var devicesEventSink: EventChannel.EventSink? = null
+
+    private val bluetoothReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            when(intent.action) {
+                BluetoothDevice.ACTION_FOUND -> {
+                    val device: BluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+                    AlertDialog.Builder(context).setMessage("Received!").show()
+                }
+            }
+        }
+    }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         when(call.method) {
@@ -40,6 +58,7 @@ class BluetoothQueryPlugin(
                 currentRequestResult = result
                 askLocationPermission()
             }
+            "startScan" -> startScan()
         }
     }
 
@@ -79,6 +98,14 @@ class BluetoothQueryPlugin(
      * */
     private fun askLocationPermission() {
         ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), REQUEST_LOCATION_PERMISSION)
+    }
+
+    /**
+     * Start scanning for devices
+     * */
+    private fun startScan() {
+        val intentFilter = IntentFilter(BluetoothDevice.ACTION_FOUND)
+        activity.registerReceiver(bluetoothReceiver, intentFilter)
     }
 
     /**
