@@ -13,4 +13,16 @@ class BluetoothQuery {
   static Future<bool> isEnabled() async {
     return await _channel.invokeMethod('isEnabled');
   }
+
+  static Future askToTurnBluetoothOn() async {
+    await _channel.invokeMethod('askToTurnBluetoothOn');
+  }
+
+  static Future<bool> hasBluetoothPermission() async {
+    return await _channel.invokeMethod('hasBluetoothPermission');
+  }
+
+  static Future askBluetoothPermission() async {
+    await _channel.invokeMethod('askBluetoothPermission');
+  }
 }
