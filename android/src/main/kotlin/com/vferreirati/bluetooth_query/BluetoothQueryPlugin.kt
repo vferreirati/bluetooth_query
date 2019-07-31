@@ -5,7 +5,6 @@ import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -15,7 +14,6 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import java.lang.IllegalArgumentException
 
 class BluetoothQueryPlugin(
         private val context: Context,
@@ -34,6 +32,13 @@ class BluetoothQueryPlugin(
                     throw IllegalStateException("Already requesting permission!")
                 currentRequestResult = result
                 askToTurnBluetoothOn()
+            }
+            "checkLocationPermission" -> result.success(checkLocationPermission())
+            "askLocationPermission" -> {
+                if(currentRequestResult != null)
+                    throw IllegalStateException("Already requesting permission!")
+                currentRequestResult = result
+                askLocationPermission()
             }
         }
     }
@@ -54,10 +59,16 @@ class BluetoothQueryPlugin(
         activity.startActivityForResult(intent, CODE_TURN_BLUETOOTH_ON)
     }
 
+    private fun checkLocationPermission() = ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
+
+    private fun askLocationPermission() {
+        ActivityCompat.requestPermissions(activity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION), REQUEST_LOCATION_PERMISSION)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?): Boolean {
         return when(requestCode) {
             CODE_TURN_BLUETOOTH_ON -> {
-                currentRequestResult!!.success(resultCode == Activity.RESULT_OK)
+                currentRequestResult?.success(resultCode == Activity.RESULT_OK)
                 currentRequestResult = null
                 true
             }
@@ -65,13 +76,22 @@ class BluetoothQueryPlugin(
         }
     }
 
-    override fun onRequestPermissionsResult(p0: Int, p1: Array<out String>?, p2: IntArray?): Boolean {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
+        return when(requestCode) {
+            REQUEST_LOCATION_PERMISSION -> {
+                currentRequestResult?.success(grantResults != null && grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED)
+                currentRequestResult = null
+                true
+            }
+            else -> false
+        }
     }
 
     companion object {
 
         private const val CODE_TURN_BLUETOOTH_ON = 100
+
+        private const val REQUEST_LOCATION_PERMISSION = 200
 
         @JvmStatic
         fun registerWith(registrar: Registrar) {

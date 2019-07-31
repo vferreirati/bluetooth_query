@@ -27,6 +27,16 @@ class _MyAppState extends State<MyApp> {
     print('Bluetooth is turned on: $turnedOn');
   }
 
+  void _checkLocationPermissions() async {
+    final hasPermission = await BluetoothQuery.checkLocationPermission();
+    print('Has location permission: $hasPermission');
+  }
+
+  void _askLocationPermission() async {
+    final granted = await BluetoothQuery.askLocationPermission();
+    print('Location permission granted: $granted');
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -44,6 +54,20 @@ class _MyAppState extends State<MyApp> {
               child: FlatButton(
                 child: Text('Ask to turn bluetooth on'),
                 onPressed: _askToTurnBluetoothOn,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FlatButton(
+                child: Text('Check location permissions'),
+                onPressed: _checkLocationPermissions,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FlatButton(
+                child: Text('Ask location permission'),
+                onPressed: _askLocationPermission,
               ),
             ),
           ],
