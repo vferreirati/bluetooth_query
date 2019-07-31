@@ -35,7 +35,7 @@ class BluetoothQueryPlugin(
             when(intent.action) {
                 BluetoothDevice.ACTION_FOUND -> {
                     val device: BluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
-                    AlertDialog.Builder(context).setMessage("Received!").show()
+                    Log.e("Victor", "Found device ${device.name ?: "Sem nome"}")
                 }
             }
         }
@@ -106,6 +106,7 @@ class BluetoothQueryPlugin(
     private fun startScan() {
         val intentFilter = IntentFilter(BluetoothDevice.ACTION_FOUND)
         activity.registerReceiver(bluetoothReceiver, intentFilter)
+        btAdapter.startDiscovery()
     }
 
     /**
