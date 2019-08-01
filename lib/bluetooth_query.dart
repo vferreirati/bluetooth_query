@@ -1,10 +1,11 @@
 import 'dart:async';
 
+import 'package:bluetooth_query/bluetooth_device.dart';
 import 'package:flutter/services.dart';
 
 class BluetoothQuery {
-  static const MethodChannel _channel =
-      const MethodChannel('bluetooth_query');
+  static const MethodChannel _channel = const MethodChannel('bluetooth_query');
+  static const EventChannel _queryChannel = const EventChannel('query_channel');
 
   /// Starts the bluetooth query plugin by getting the BluetoothAdapter instance
   /// Returns false if the device doesn't support bluetooth
@@ -13,8 +14,8 @@ class BluetoothQuery {
   }
 
   /// Check if the device bluetooth is turned on
-  static Future<bool> isEnabled() async {
-    return await _channel.invokeMethod('isEnabled');
+  static Future<bool> isBluetoothEnabled() async {
+    return await _channel.invokeMethod('isBluetoothEnabled');
   }
 
   /// Asks the user to turn the bluetooth on
@@ -32,7 +33,11 @@ class BluetoothQuery {
     return await _channel.invokeMethod('askLocationPermission');
   }
 
-  static Future startScan() async {
-    await _channel.invokeMethod('startScan');
+  /// Starts the bluetooth query on the device.
+  /// Emits a new value on the stream on new devices found
+  static Stream<BluetoothDevice> startScan() async* {
+    _channel.invokeMethod('startScan');
+
+    yield* _queryChannel.receiveBroadcastStream().map((deviceMap) => BluetoothDevice.fromJson(deviceMap));
   }
 }
