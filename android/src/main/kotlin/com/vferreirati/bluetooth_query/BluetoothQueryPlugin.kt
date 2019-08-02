@@ -44,7 +44,7 @@ class BluetoothQueryPlugin(
                 if(intent.action == BluetoothDevice.ACTION_FOUND) {
                     val device: BluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
 
-                    if(foundDevices.find { current -> current.address == device.address } == null) {
+                    if(device.name != null && device.address != null && foundDevices.find { current -> current.address == device.address } == null) {
                         foundDevices.add(device)
                         devicesEventSink?.success(FoundDevice(device.name, device.address).toMap())
                     }
