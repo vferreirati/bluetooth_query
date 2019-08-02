@@ -1,15 +1,14 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'bluetooth_device.g.dart';
+
+@JsonSerializable()
 class BluetoothDevice {
-  String name;
-  String address;
+  final String name;
+  final String address;
 
-  BluetoothDevice({
-    this.name, 
-    this.address
-  });
+  BluetoothDevice(this.name, this.address);
 
-  static BluetoothDevice fromJson(Map<dynamic, dynamic> json) {
-    return BluetoothDevice()
-    ..address = json['address']
-    ..name = json['name'];
-  }
+  static BluetoothDevice fromJson(Map<String, dynamic> json) => _$BluetoothDeviceFromJson(json);
+  Map<String, dynamic> toJson() => _$BluetoothDeviceToJson(this);
 }
