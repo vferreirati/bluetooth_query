@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.gson.Gson
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -28,6 +29,7 @@ class BluetoothQueryPlugin(
 
     private lateinit var btAdapter: BluetoothAdapter
     private var currentRequestResult: Result? = null
+    private val gson = Gson()
 
     /**
      * Stream handler which represents the devices that are found by the bluetooth adapter
@@ -46,7 +48,7 @@ class BluetoothQueryPlugin(
 
                     if(device.name != null && device.address != null && foundDevices.find { current -> current.address == device.address } == null) {
                         foundDevices.add(device)
-                        devicesEventSink?.success(FoundDevice(device.name, device.address).toMap())
+                        devicesEventSink?.success(gson.toJson(FoundDevice(device.name, device.address)))
                     }
                 }
             }

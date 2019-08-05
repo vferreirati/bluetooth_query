@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:bluetooth_query/bluetooth_device.dart';
 import 'package:flutter/services.dart';
@@ -38,6 +39,7 @@ class BluetoothQuery {
   static Stream<BluetoothDevice> startScan() async* {
     _channel.invokeMethod('startScan');
 
-    yield* _queryChannel.receiveBroadcastStream().map((deviceMap) => BluetoothDevice.fromJson(deviceMap));
+    yield* _queryChannel.receiveBroadcastStream()
+        .map((jsonString) => BluetoothDevice.fromJson(json.decode(jsonString)));
   }
 }
